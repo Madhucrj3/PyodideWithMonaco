@@ -35,6 +35,3 @@ if __name__ == "__main__":
 
 
 end_time = time.process_time()
-
-elapsed_time = end_time - start_time
-print(f"Elapsed time: {elapsed_time} seconds")

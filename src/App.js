@@ -1,17 +1,23 @@
 import { useState } from "react";
 import Editors from "./components/Editor";
-import { runScript } from "./pyodide";
 import { runScripts } from "./pyodideVsCode";
 import {
   AppContainer,
   PyodideButton,
   PyodideInput,
+  PyodideInputContainer,
+  PyodideInputOutputContainer,
+  PyodideOutputContainer,
   PyodideText,
 } from "./styledComponent";
 const App = () => {
   const [code, setCode] = useState("");
   const [text, setText] = useState("");
   const [argument, setArgument] = useState("");
+  const [output, setOutput] = useState("");
+  const handleChangeOutput = (result) => {
+    setOutput(result);
+  };
   const handleChange = (event) => {
     setText(event.target.value);
   };
@@ -38,7 +44,7 @@ const App = () => {
     }
     const start = performance.now();
     console.clear();
-    await runScripts(code, text);
+    await runScripts(code, text, handleChangeOutput);
     const end = performance.now();
     console.log((end - start) / 1000 + "s");
   };
@@ -46,13 +52,21 @@ const App = () => {
     <>
       <AppContainer>
         <Editors setCodeMonaco={setCodeMonaco} />
-        <PyodideText>Input</PyodideText>
-        <PyodideInput
-          value={text}
-          onChange={handleChange}
-          rows="14"
-          cols="50"
-        />
+        <PyodideInputOutputContainer>
+          <PyodideInputContainer>
+            <PyodideText>Input</PyodideText>
+            <PyodideInput
+              value={text}
+              onChange={handleChange}
+              rows="14"
+              cols="65"
+            />
+          </PyodideInputContainer>
+          <PyodideOutputContainer>
+            <PyodideText>Output</PyodideText>
+            <PyodideInput value={output} rows="14" cols="65" />
+          </PyodideOutputContainer>
+        </PyodideInputOutputContainer>
         <PyodideText>Arguments</PyodideText>
         <PyodideInput
           value={argument}

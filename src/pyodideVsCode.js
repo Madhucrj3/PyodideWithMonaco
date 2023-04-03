@@ -1,4 +1,5 @@
-const runScripts = async (code_content, code_input) => {
+const runScripts = async (code_content, code_input, handleChangeOutput) => {
+  let result = "";
   let input = [];
   function createStdin() {
     let inputIndex = 0;
@@ -14,6 +15,7 @@ const runScripts = async (code_content, code_input) => {
     return stdin;
   }
   const handleOutput = (msg) => {
+    result = result + msg + "\n";
     console.log(msg);
   };
   if (code_input.length > 0) {
@@ -21,14 +23,15 @@ const runScripts = async (code_content, code_input) => {
     input = myArray;
   }
   //window.pyodides.setInterruptHandler(interruptHandler);
-  let result = "";
   try {
     await window.pyodides.setStdin({ stdin: createStdin() });
     await window.pyodides.setStdout({ batched: (msg) => handleOutput(msg) });
     await window.pyodides.setStderr({ batched: (msg) => console.log(msg) });
-    result = await window.pyodides.runPythonAsync(code_content);
-  } catch (error) {
-    console.log(error);
+    await window.pyodides.runPythonAsync(code_content);
+    handleChangeOutput(result);
+  } catch (e) {
+    handleChangeOutput(e);
+    console.log(e);
   }
   return result;
 };

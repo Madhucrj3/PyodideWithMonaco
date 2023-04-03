@@ -26,3 +26,12 @@ export const PyodideText = styled.h1`
   padding: 0;
   padding-left: 1rem;
 `;
+export const PyodideInputOutputContainer = styled.div`
+  display: flex;
+`;
+export const PyodideInputContainer = styled.div`
+  width: 50%;
+`;
+export const PyodideOutputContainer = styled.div`
+  width: 50%;
+`;
