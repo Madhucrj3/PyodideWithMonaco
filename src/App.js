@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Editors from "./components/Editor";
+import { asyncRun, stop } from "./pyodide";
 import { runScripts } from "./pyodideVsCode";
 import {
   AppContainer,
@@ -15,6 +16,7 @@ const App = () => {
   const [text, setText] = useState("");
   const [argument, setArgument] = useState("");
   const [output, setOutput] = useState("");
+  // console.log(asyncRun(code));
   const handleChangeOutput = (result) => {
     setOutput(result);
   };
@@ -33,7 +35,6 @@ const App = () => {
     argumentsArray = myArray;
     console.log(argumentsArray);
     const pyodide = await window.loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.22.1/full/",
       args: argumentsArray,
     });
     window.pyodides = pyodide;
@@ -48,6 +49,7 @@ const App = () => {
     const end = performance.now();
     console.log((end - start) / 1000 + "s");
   };
+
   return (
     <>
       <AppContainer>

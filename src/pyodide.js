@@ -1,38 +1,30 @@
-const runScript = async (overallCode) => {
-  let input = [];
-  function createStdin() {
-    let inputIndex = 0;
-    function stdin() {
-      if (inputIndex < input.length) {
-        let character = input[inputIndex];
-        inputIndex++;
-        return character;
-      } else {
-        throw new Error("Input value is empty");
-      }
-    }
-    return stdin;
-  }
-  const handleOutput = (msg) => {
-    console.log(msg);
-  };
-  const overallParseCode = JSON.parse(overallCode);
-  const code_content = JSON.parse(overallParseCode.code_content);
-  const code_input = JSON.parse(overallParseCode.inputs);
-  if (code_input.length > 0) {
-    const myArray = code_input.split("\n");
-    input = myArray;
-  }
-  //window.pyodides.setInterruptHandler(interruptHandler);
-  let result = "";
-  try {
-    await window.pyodides.setStdin({ stdin: createStdin() });
-    await window.pyodides.setStdout({ batched: (msg) => handleOutput(msg) });
-    await window.pyodides.setStderr({ batched: (msg) => console.log(msg) });
-    result = await window.pyodides.runPythonAsync(code_content);
-  } catch (error) {
-    console.log(error);
-  }
-  return result;
+const pyodideWorker = new Worker("/webworker.js");
+console.log(pyodideWorker);
+const callbacks = {};
+
+pyodideWorker.onmessage = (event) => {
+  const { id, ...data } = event.data;
+  const onSuccess = callbacks[id];
+  delete callbacks[id];
+  onSuccess(data);
 };
-export { runScript };
+const stop = () => {
+  pyodideWorker.terminate();
+};
+const asyncRun = (() => {
+  let id = 0; // identify a Promise
+  return (script, context) => {
+    // the id could be generated more carefully
+    id = (id + 1) % Number.MAX_SAFE_INTEGER;
+    return new Promise((onSuccess) => {
+      callbacks[id] = onSuccess;
+      pyodideWorker.postMessage({
+        ...context,
+        python: script,
+        id,
+      });
+    });
+  };
+})();
+
+export { asyncRun, stop };
