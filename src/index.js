@@ -3,23 +3,6 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-const loadPyodides = async () => {
-  const startTime = performance.now();
-  const pyodide = await window.loadPyodide({
-    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.22.1/full/",
-  });
-  await pyodide.loadPackage(["micropip"]);
-  const micropip = pyodide.pyimport("micropip");
-  await micropip.install("vega-datasets");
-  //await micropip.install("requests");
-  const loadTime = performance.now() - startTime;
-  console.log("loadTime " + loadTime / 1000 + "s");
-  const usedHeapSize = pyodide._module.HEAP8.buffer.byteLength / (1024 * 1024);
-
-  console.log(`Heap size: ${usedHeapSize.toFixed(2)} MB`);
-  window.pyodides = pyodide;
-};
-loadPyodides();
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>

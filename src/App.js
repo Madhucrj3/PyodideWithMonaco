@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Editors from "./components/Editor";
-import { asyncRun, stop } from "./pyodide";
-import { runScripts } from "./pyodideVsCode";
+// import { asyncRun, handleterminate } from "./pyodide";
 import {
   AppContainer,
   PyodideButton,
@@ -16,7 +15,10 @@ const App = () => {
   const [text, setText] = useState("");
   const [argument, setArgument] = useState("");
   const [output, setOutput] = useState("");
-  // console.log(asyncRun(code));
+  //console.log(asyncRu
+  let pyodideWorker;
+  let interruptBuffer = new Uint8Array(new ArrayBuffer(4));
+
   const handleChangeOutput = (result) => {
     setOutput(result);
   };
@@ -40,16 +42,52 @@ const App = () => {
     window.pyodides = pyodide;
   };
   const handleRun = async () => {
-    if (argument.length > 0) {
-      await handleArgumentLoading();
+    pyodideWorker = new Worker("/webworker.js");
+    const script = code;
+    // const context = {
+    //   A_rank: [0.8, 0.4, 1.2, 3.7, 2.6, 5.8],
+    // };
+    // // let text1 = text.split("\n");
+    // // console.log(text1);
+    // // const context = {
+    // //   A_rank: text1,
+    // // };
+    // async function main() {
+    //   try {
+    //     const { results, error } = await asyncRun(script, context);
+    //     if (results) {
+    //       console.log("pyodideWorker return results: ", results);
+    //     } else if (error) {
+    //       console.log("pyodideWorker error: ", error);
+    //     }
+    //   } catch (e) {
+    //     console.log(
+    //       `Error in pyodideWorker at ${e.filename}, Line: ${e.lineno}, ${e.message}`
+    //     );
+    //   }
+    // }
+    // main();
+    async function runCode(code) {
+      // Clear interruptBuffer in case it was accidentally left set after previous code completed.
+      interruptBuffer[0] = 0;
+      pyodideWorker.postMessage({ cmd: "runCode", code });
     }
-    const start = performance.now();
-    console.clear();
-    await runScripts(code, text, handleChangeOutput);
-    const end = performance.now();
-    console.log((end - start) / 1000 + "s");
+    runCode(script);
   };
-
+  const handleStop = () => {
+    // pyodideWorker.postMessage({ cmd: "setInterruptBuffer", interruptBuffer });
+    // function interruptExecution() {
+    //   // 2 stands for SIGINT.
+    //   interruptBuffer[0] = 2;
+    // }
+    // interruptExecution();
+    console.log("stopped");
+    pyodideWorker.postMessage({ cmd: "setInterruptBuffer", interruptBuffer });
+    function interruptExecution() {
+      // 2 stands for SIGINT.
+      interruptBuffer[0] = 2;
+    }
+  };
   return (
     <>
       <AppContainer>
@@ -77,6 +115,7 @@ const App = () => {
           cols="50"
         />
         <PyodideButton onClick={handleRun}>Run</PyodideButton>
+        <PyodideButton onClick={handleStop}>Stop</PyodideButton>
       </AppContainer>
     </>
   );

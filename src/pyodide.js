@@ -1,30 +1,31 @@
-const pyodideWorker = new Worker("/webworker.js");
-console.log(pyodideWorker);
-const callbacks = {};
+// const pyodideWorker = new Worker("/webworker.js");
+// console.log(pyodideWorker);
+// const callbacks = {};
 
-pyodideWorker.onmessage = (event) => {
-  const { id, ...data } = event.data;
-  const onSuccess = callbacks[id];
-  delete callbacks[id];
-  onSuccess(data);
-};
-const stop = () => {
-  pyodideWorker.terminate();
-};
-const asyncRun = (() => {
-  let id = 0; // identify a Promise
-  return (script, context) => {
-    // the id could be generated more carefully
-    id = (id + 1) % Number.MAX_SAFE_INTEGER;
-    return new Promise((onSuccess) => {
-      callbacks[id] = onSuccess;
-      pyodideWorker.postMessage({
-        ...context,
-        python: script,
-        id,
-      });
-    });
-  };
-})();
+// pyodideWorker.onmessage = (event) => {
+//   const { id, ...data } = event.data;
+//   const onSuccess = callbacks[id];
+//   delete callbacks[id];
+//   onSuccess(data);
+// };
 
-export { asyncRun, stop };
+// const asyncRun = (() => {
+//   let id = 0; // identify a Promise
+//   return (script, context) => {
+//     // the id could be generated more carefully
+//     id = (id + 1) % Number.MAX_SAFE_INTEGER;
+//     return new Promise((onSuccess) => {
+//       callbacks[id] = onSuccess;
+//       pyodideWorker.postMessage({
+//         ...context,
+//         python: script,
+//         id,
+//       });
+//     });
+//   };
+// })();
+// const handleterminate = () => {
+//   console.log("term");
+//   pyodideWorker.terminate();
+// };
+// export { asyncRun, handleterminate };
